@@ -6,6 +6,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/ssavelyev/go-restful-api/internal/env"
+	"github.com/ssavelyev/go-restful-api/internal/store"
 )
 
 func main() {
@@ -19,8 +20,12 @@ func main() {
 	cfg := config{
 		addr: env.GetString(addr, ":8080"),
 	}
+
+	store := store.NewStorage(nil)
+
 	app := &application{
 		config: cfg,
+		store:  store,
 	}
 
 	mux := app.mount()
