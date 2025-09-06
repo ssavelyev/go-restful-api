@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/joho/godotenv"
+	"github.com/ssavelyev/go-restful-api/internal/db"
 	"github.com/ssavelyev/go-restful-api/internal/env"
 	"github.com/ssavelyev/go-restful-api/internal/store"
 )
@@ -18,16 +18,22 @@ func main() {
 	cfg := config{
 		addr: env.GetString("ADDR", ":8080"),
 		db: dbConfig{
-			addr:        env.GetString("DB_ADDR", "postgres://user:adminpassword@localhost/social?sslmode=disable"),
+			addr:        env.GetString("DB_ADDR", "postgres://admin:adminpassword@localhost/socialnetwork?sslmode=disable"),
 			maxOpenConn: env.GetInt("DB_MAX_OPEN_CONN", 30),
 			maxIdleConn: env.GetInt("DB_MAX_IDLE_CONN", 30),
-			maxIdleTime: env.GetString("DB_MAX_IDLE_TIME", "15min"),
+			maxIdleTime: env.GetString("DB_MAX_IDLE_TIME", "15m"),
 		},
 	}
 
-	fmt.Println("cfg", cfg)
+	db, err := db.New(cfg.db.addr, cfg.db.maxOpenConn, cfg.db.maxIdleConn, cfg.db.maxIdleTime)
+	if err != nil {
+		log.Panic(err)
+	}
 
-	store := store.NewStorage(nil)
+	defer db.Close()
+	log.Println("Database connected")
+
+	store := store.NewStorage(db)
 
 	app := &application{
 		config: cfg,
