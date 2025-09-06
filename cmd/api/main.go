@@ -1,8 +1,8 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"os"
 
 	"github.com/joho/godotenv"
 	"github.com/ssavelyev/go-restful-api/internal/env"
@@ -15,11 +15,17 @@ func main() {
 		log.Fatal("Error loading env file")
 	}
 
-	addr := os.Getenv("ADDR")
-
 	cfg := config{
-		addr: env.GetString(addr, ":8080"),
+		addr: env.GetString("ADDR", ":8080"),
+		db: dbConfig{
+			addr:        env.GetString("DB_ADDR", "postgres://user:adminpassword@localhost/social?sslmode=disable"),
+			maxOpenConn: env.GetInt("DB_MAX_OPEN_CONN", 30),
+			maxIdleConn: env.GetInt("DB_MAX_IDLE_CONN", 30),
+			maxIdleTime: env.GetString("DB_MAX_IDLE_TIME", "15min"),
+		},
 	}
+
+	fmt.Println("cfg", cfg)
 
 	store := store.NewStorage(nil)
 
